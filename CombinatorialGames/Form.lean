@@ -146,6 +146,10 @@ theorem add_right_mem_moves_add {p : Player} {x y : G} (h : x ∈ moves p y) (z 
     x + z ∈ moves p (y + z) := by
   rw [moves_add]; left; use x
 
+@[aesop simp]
+lemma isOption_iff_mem_union {x y : G} : IsOption x y ↔ x ∈ moves .left y ∪ moves .right y := by
+  simp [IsOption, Moves.IsOption', Player.exists]
+
 end Form
 
 class MisereForm (G : Type (v + 1)) extends Form G where

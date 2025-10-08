@@ -5,8 +5,10 @@ Authors: Violeta Hernández Palacios, Kim Morrison
 -/
 
 import CombinatorialGames.GameForm
-import CombinatorialGames.Form
+import CombinatorialGames.GameForm.Birthday
+import Mathlib.Algebra.Order.SuccPred
 import Mathlib.Data.Finite.Prod
+import Mathlib.Data.Fintype.Order
 import Mathlib.Data.Set.Finite.Lattice
 
 /-!
@@ -131,14 +133,49 @@ decreasing_by form_wf
 theorem neg_iff {x : G} : Short (-x) ↔ Short x :=
   ⟨fun _ ↦ by simpa using Short.neg (-x), fun _ ↦ Short.neg x⟩
 
+theorem short_iff_finite_setOf_subposition {x : G} :
+    Short x ↔ {y | Subposition y x}.Finite := by
+  constructor <;> intro h1
+  · apply finite_setOf_subposition
+  · exact Moves.short_iff_finite_setOf_subposition.mpr h1
+
 end Short
 end Form
 
 namespace GameForm
 
-open Form (Short)
+open Form
 
 variable {x y : GameForm}
+
+private theorem NatOrdinal.lt_omega0 {o : NatOrdinal} : o < NatOrdinal.of Ordinal.omega0 ↔ ∃ n : ℕ, o = n :=
+  Ordinal.lt_omega0
+
+private theorem NatOrdinal.nat_lt_omega0 (n : ℕ) : n < NatOrdinal.of Ordinal.omega0 :=
+  Ordinal.nat_lt_omega0 n
+
+theorem short_iff_birthday_finite {g : GameForm} :
+    Short g ↔ birthday g < NatOrdinal.of Ordinal.omega0 := by
+  refine ⟨fun h ↦ ?_, ?_⟩
+  · have (y : {y // IsOption y g}) : ∃ n : ℕ, birthday y.val = n := by
+      rw [← NatOrdinal.lt_omega0, ← short_iff_birthday_finite]
+      exact h.isOption y.2
+    choose f hf using this
+    obtain ⟨n, hn⟩ := (Set.finite_range f).exists_le
+    apply lt_of_le_of_lt _ (NatOrdinal.nat_lt_omega0 (n + 1))
+    rw [birthday_le_iff', Nat.cast_add_one]
+    simp only [Order.lt_add_one_iff]
+    aesop
+  · rw [NatOrdinal.lt_omega0, Form.Short.short_iff_finite_setOf_subposition]
+    intro ⟨n, hn⟩
+    apply (birthdayFinset n).finite_toSet.subset fun y hy ↦ ?_
+    simpa using (birthday_lt_of_subposition hy).le.trans_eq hn
+termination_by g
+decreasing_by form_wf
+
+theorem short_iff_birthday_nat {x : GameForm} :
+    Short x ↔ (∃ (n : ℕ), birthday x = n) := by
+  rw [short_iff_birthday_finite, NatOrdinal.lt_omega0]
 
 @[simp]
 protected instance Short.zero : Short (0 : GameForm) := by
