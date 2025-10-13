@@ -17,6 +17,8 @@ This file defines some simple yet notable combinatorial games:
 * `↓ = {⋆ | 0}`
 -/
 
+noncomputable section
+
 universe u
 
 namespace GameForm

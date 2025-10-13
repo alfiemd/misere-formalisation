@@ -2,6 +2,8 @@ import CombinatorialGames.Form
 import CombinatorialGames.GameForm
 import CombinatorialGames.Form.Misere.Outcome
 
+noncomputable section
+
 universe u
 
 def AugmentedFunctor (α : Type (u + 1)) : Type (u + 1) :=

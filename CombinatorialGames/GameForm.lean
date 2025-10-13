@@ -13,6 +13,8 @@ import Mathlib.Algebra.Order.Group.Unbundled.Basic
 import Mathlib.Algebra.Ring.Int.Defs
 import Mathlib.Data.QPF.Univariate.Basic
 
+noncomputable section
+
 universe u
 
 open Form

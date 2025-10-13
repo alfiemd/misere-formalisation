@@ -9,6 +9,8 @@ import CombinatorialGames.GameForm.Birthday
 import CombinatorialGames.Form.Short
 import CombinatorialGames.Form.Misere.Outcome
 
+noncomputable section
+
 namespace GameForm.Misere.Outcome
 
 open Form
