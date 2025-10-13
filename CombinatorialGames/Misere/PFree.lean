@@ -1,5 +1,6 @@
 import CombinatorialGames.AugmentedForm.Misere.Outcome
 import CombinatorialGames.GameForm.Misere.Outcome
+import CombinatorialGames.Form.Short
 
 open Form
 open Form.Misere.Outcome
@@ -313,6 +314,71 @@ theorem PFree.exists_move_WinsGoingFirst {g : GameForm} {p : Player}
   · have h6 : MisereOutcome gr = .P := MisereOutcome_eq_P_iff'.mpr ⟨h5, h4⟩
     have h7 : MisereOutcome gr ≠ .P := (IsPFree_moves h2 h3).MisereOutcome_ne_P
     exact False.elim (h7 h6)
+
+theorem add_birthday_plus_one_R (g : GameForm) (b : ℕ) (h1 : birthday g = b) :
+    MisereOutcome (g + (b + (1 : ℕ))) = .R := by
+  sorry
+
+theorem add_neg_birthday_plus_one_L (g : GameForm) (b : ℕ) (h1 : birthday g = b) :
+    MisereOutcome (g + (-(b + (1 : ℕ)))) = .L := by
+  sorry
+
+def RTippingPoint.aux (g : GameForm) [h1 : Short g] :
+    ∃ (n : ℕ), MisereOutcome (g + n) = .R := by
+  let ⟨b, h2⟩ := GameForm.short_iff_birthday_nat.mp h1
+  use (b + 1)
+  rw [Nat.cast_add]
+  exact add_birthday_plus_one_R g b h2
+
+def LTippingPoint.aux (g : GameForm) [h1 : Short g] :
+    ∃ (n : ℕ), MisereOutcome (g + (-n)) = .L := by
+  let ⟨b, h2⟩ := GameForm.short_iff_birthday_nat.mp h1
+  use (b + 1)
+  rw [Nat.cast_add]
+  exact add_neg_birthday_plus_one_L g b h2
+
+def NTippingPoint.aux (g : GameForm) [h1 : Short g] :
+    ∃ (n : ℕ), MisereOutcome (g + n) = .N ∨ MisereOutcome (g + (-n)) = .N := by
+  sorry
+
+open scoped Classical in
+noncomputable def NTippingPoint (g : GameForm) [Short g] : ℕ :=
+  Nat.find (NTippingPoint.aux g)
+
+theorem NTippingPoint.neg (g : GameForm) [Short g] : NTippingPoint g = NTippingPoint (-g) := by
+  sorry
+
+open scoped Classical in
+noncomputable def RTippingPoint (g : GameForm) [Short g] : ℕ :=
+  Nat.find (RTippingPoint.aux g)
+
+open scoped Classical in
+theorem RTippingPoint_iff (g : GameForm) [Short g] (n : ℕ) :
+    (RTippingPoint g = n)
+     ↔ ((MisereOutcome (g + n) = .R) ∧ ∀ (x : ℕ), MisereOutcome (g + x) = .R → n ≤ x) := by
+  unfold RTippingPoint
+  rw [Nat.find_eq_iff]
+  constructor <;> intro ⟨h2, h3⟩ <;> apply And.intro h2 <;> intro x h4
+  · exact Nat.le_of_not_lt fun h5 ↦ h3 x h5 h4
+  · intro h5
+    have h6 := h3 x h5
+    omega
+
+open scoped Classical in
+noncomputable def LTippingPoint (g : GameForm) [Short g] : ℕ :=
+  Nat.find (LTippingPoint.aux g)
+
+open scoped Classical in
+theorem LTippingPoint_iff (g : GameForm) [Short g] (n : ℕ) :
+    (LTippingPoint g = n)
+     ↔ ((MisereOutcome (g + (-n)) = .L) ∧ ∀ (x : ℕ), MisereOutcome (g + (-x)) = .L → n ≤ x) := by
+  unfold LTippingPoint
+  rw [Nat.find_eq_iff]
+  constructor <;> intro ⟨h2, h3⟩ <;> apply And.intro h2 <;> intro x h4
+  · exact Nat.le_of_not_lt fun h5 ↦ h3 x h5 h4
+  · intro h5
+    have h6 := h3 x h5
+    omega
 
 -- augmented form versions
 
