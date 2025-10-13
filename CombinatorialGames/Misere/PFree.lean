@@ -13,6 +13,10 @@ def IsPFree (g : G) : Prop :=
 termination_by g
 decreasing_by form_wf
 
+theorem IsPFree.MisereOutcome_ne_P {g : G} (h1 : IsPFree g) : MisereOutcome g ≠ .P := by
+  unfold IsPFree at h1
+  exact h1.left
+
 def IsPFree.neg {g : G} (h1 : IsPFree g) : IsPFree (-g) := by
   unfold IsPFree at *
   obtain ⟨h1, h2⟩ := h1
@@ -296,6 +300,19 @@ theorem add_int_IsPFree {g : GameForm} (h1 : IsPFree g) (n : ℤ) : IsPFree (g +
     rw [<-add_comm]
     exact h3
 termination_by n.natAbs
+
+theorem PFree.exists_move_WinsGoingFirst {g : GameForm} {p : Player}
+    (h1 : ¬IsEnd p g) (h2 : IsPFree g) (h3 : WinsGoingFirst p g) :
+    (∃gr ∈ moves p g, WinsGoingFirst p gr) := by
+  rw [GameForm.Misere.Outcome.WinsGoingFirst_iff] at h3
+  apply Or.elim h3 (fun h4 => False.elim (h1 h4))
+  intro ⟨gr, h3, h4⟩
+  use gr, h3
+  by_cases h5 : WinsGoingFirst p gr
+  · exact h5
+  · have h6 : MisereOutcome gr = .P := MisereOutcome_eq_P_iff'.mpr ⟨h5, h4⟩
+    have h7 : MisereOutcome gr ≠ .P := (IsPFree_moves h2 h3).MisereOutcome_ne_P
+    exact False.elim (h7 h6)
 
 -- augmented form versions
 

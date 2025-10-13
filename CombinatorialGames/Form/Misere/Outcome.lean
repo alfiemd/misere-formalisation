@@ -106,4 +106,23 @@ theorem MisereOutcome_eq_R_iff {g : G} :
   rw [h1, h2]
   exact MisereOutcome_eq_player_iff g Player.right
 
+@[simp]
+theorem MisereOutcome_eq_P_iff' {g : G} {p : Player} :
+    (MisereOutcome g = .P) ↔ (¬WinsGoingFirst p g ∧ ¬WinsGoingFirst (-p) g) := by
+  constructor
+  · intro h1
+    exact ⟨outcome_eq_P_not_WinsGoingFirst h1, outcome_eq_P_not_WinsGoingFirst h1⟩
+  · intro ⟨h1, h2⟩
+    unfold MisereOutcome Outcome.ofPlayers MiserePlayerOutcome
+    cases p
+    all_goals
+    · simp only [Player.neg_right, Player.neg_left] at h2
+      simp only [h1, h2, Player.neg_left, Player.neg_right, Player.neg_right, reduceIte]
+
+@[simp]
+theorem MisereOutcome_eq_P_iff {g : G} :
+    (MisereOutcome g = .P) ↔ (¬WinsGoingFirst .right g ∧ ¬WinsGoingFirst .left g) := by
+  rw [<-Player.neg_right]
+  exact MisereOutcome_eq_P_iff'
+
 end Form.Misere.Outcome

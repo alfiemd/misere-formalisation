@@ -167,4 +167,19 @@ theorem add_end_WinsGoingFirst {g h : GameForm} {p : Player} (h1 : IsEnd p g)
     (h2 : IsEnd p h) : WinsGoingFirst p (g + h) :=
   WinsGoingFirst_of_End (IsEnd.add_iff.mpr ⟨h1, h2⟩)
 
+@[simp]
+theorem one_MisereOutcome_R : MisereOutcome (1 : GameForm) = .R := by
+  simp only [MisereOutcome_eq_R_iff]
+  constructor
+  · refine GameForm.Misere.Outcome.WinsGoingFirst_of_End ?_
+    simp only [IsEnd, GameForm.one_def, GameForm.moves_ofSets, Player.cases]
+  · rw [GameForm.Misere.Outcome.not_WinsGoingFirst]
+    constructor
+    · simp only [IsEnd, GameForm.one_def, GameForm.moves_ofSets, Player.cases,
+                 Set.singleton_ne_empty, not_false_eq_true]
+    · intro gl h2
+      simp [GameForm.one_def] at h2
+      rw [h2]
+      simp only [Player.neg_left, IsEnd_zero, WinsGoingFirst_of_IsEnd]
+
 end GameForm.Misere.Outcome

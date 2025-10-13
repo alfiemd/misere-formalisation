@@ -169,6 +169,10 @@ theorem WinsGoingFirst_neg_iff (g : G) (p : Player) : (WinsGoingFirst p (-g)) �
 theorem WinsGoingFirst_of_IsEnd (g : G) (p : Player) (h1 : Form.IsEnd p g) : WinsGoingFirst p g :=
   WinsGoingFirst_of_IsEnd' g p h1
 
+@[simp]
+theorem WinsGoingFirst_of_zero (p : Player) : WinsGoingFirst p (0 : G) := by
+  simp only [Form.IsEnd_zero, WinsGoingFirst_of_IsEnd]
+
 open scoped Classical in
 noncomputable def MiserePlayerOutcome : G → Player → Player :=
   fun g p => if WinsGoingFirst p g then p else -p
