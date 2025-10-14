@@ -315,6 +315,128 @@ theorem PFree.exists_move_WinsGoingFirst {g : GameForm} {p : Player}
     have h7 : MisereOutcome gr ≠ .P := (IsPFree_moves h2 h3).MisereOutcome_ne_P
     exact False.elim (h7 h6)
 
+mutual
+
+theorem not_WinsGoingFirst_left_add_one {g : GameForm} (h0 : IsPFree g) (h1 : ¬WinsGoingFirst .left g) :
+    ¬WinsGoingFirst .left (g + 1) := by
+  intro h2
+  rw [GameForm.Misere.Outcome.WinsGoingFirst_iff] at h2
+  obtain h2 | ⟨gl, h2, h3⟩ := h2
+  · have h3 := (IsEnd.add_iff.mp h2).right
+    simp [IsEnd] at h3
+  · rw [Player.neg_left] at h3
+    simp at h2
+    obtain h2 | ⟨gll, h2, h4⟩ := h2
+    · rw [h2] at h3
+      have h4 := MisereOutcome_eq_P_iff.mpr ⟨h3, h1⟩
+      exact h0.MisereOutcome_ne_P h4
+    · rw [<-h4] at h3
+      have h5 : IsPFree gll := IsPFree_moves h0 h2
+      have h6 := WinsGoingFirst_right_add_one h5 (by
+        rw [GameForm.Misere.Outcome.WinsGoingFirst_iff] at h1
+        simp at h1
+        obtain ⟨h1, h6⟩ := h1
+        exact h6 gll h2)
+      exact h3 h6
+termination_by g
+decreasing_by form_wf
+
+theorem WinsGoingFirst_right_add_one {g : GameForm} (h0 : IsPFree g) (h1 : WinsGoingFirst .right g) :
+    WinsGoingFirst .right (g + 1) := by
+  rw [GameForm.Misere.Outcome.WinsGoingFirst_iff] at h1
+  obtain h1 | ⟨gr, h1, h2⟩ := h1
+  · refine GameForm.Misere.Outcome.add_end_WinsGoingFirst h1 ?_
+    simp [IsEnd]
+  · refine GameForm.Misere.Outcome.WinsGoingFirst_of_moves ?_
+    use (gr + 1)
+    constructor
+    · simp
+      use gr
+    · rw [Player.neg_right] at ⊢ h2
+      exact not_WinsGoingFirst_left_add_one (IsPFree_moves h0 h1) h2
+termination_by g
+decreasing_by form_wf
+
+end
+
+theorem MisereOutcome_add_one_R {g : GameForm} (h0 : IsPFree g) (h1 : MisereOutcome g = .R) :
+    MisereOutcome (g + 1) = .R := by
+  simp only [MisereOutcome_eq_R_iff]
+  have ⟨h2, h3⟩ := MisereOutcome_eq_R_iff.mp h1
+  constructor
+  · exact WinsGoingFirst_right_add_one h0 h2
+  · exact not_WinsGoingFirst_left_add_one h0 h3
+
+theorem MisereOutcome_add_nat_R {g : GameForm} (n : ℕ) (h0 : IsPFree g) (h1 : MisereOutcome g = .R) :
+    MisereOutcome (g + n) = .R := by
+  induction n with
+  | zero => simp [h1]
+  | succ k ih =>
+    rw [Nat.cast_add, Nat.cast_one, <-add_assoc]
+    exact MisereOutcome_add_one_R (add_nat_IsPFree h0 k) ih
+
+mutual
+
+theorem not_WinsGoingFirst_right_sub_one {g : GameForm} (h0 : IsPFree g) (h1 : ¬WinsGoingFirst .right g) :
+    ¬WinsGoingFirst .right (g + (-1)) := by
+  intro h2
+  rw [GameForm.Misere.Outcome.WinsGoingFirst_iff] at h2
+  obtain h2 | ⟨gl, h2, h3⟩ := h2
+  · have h3 := (IsEnd.add_iff.mp h2).right
+    simp [IsEnd] at h3
+  · rw [Player.neg_right] at h3
+    simp at h2
+    obtain h2 | ⟨gll, h2, h4⟩ := h2
+    · rw [h2] at h3
+      have h4 := MisereOutcome_eq_P_iff.mpr ⟨h1, h3⟩
+      exact h0.MisereOutcome_ne_P h4
+    · rw [<-h4] at h3
+      have h5 : IsPFree gll := IsPFree_moves h0 h2
+      have h6 := WinsGoingFirst_left_sub_one h5 (by
+        rw [GameForm.Misere.Outcome.WinsGoingFirst_iff] at h1
+        simp at h1
+        obtain ⟨h1, h6⟩ := h1
+        exact h6 gll h2)
+      exact h3 h6
+termination_by g
+decreasing_by form_wf
+
+theorem WinsGoingFirst_left_sub_one {g : GameForm} (h0 : IsPFree g) (h1 : WinsGoingFirst .left g) :
+    WinsGoingFirst .left (g + (-1)) := by
+  rw [GameForm.Misere.Outcome.WinsGoingFirst_iff] at h1
+  obtain h1 | ⟨gr, h1, h2⟩ := h1
+  · refine GameForm.Misere.Outcome.add_end_WinsGoingFirst h1 ?_
+    simp [IsEnd]
+  · refine GameForm.Misere.Outcome.WinsGoingFirst_of_moves ?_
+    use (gr + (-1))
+    constructor
+    · simp
+      use gr
+    · rw [Player.neg_left] at ⊢ h2
+      exact not_WinsGoingFirst_right_sub_one (IsPFree_moves h0 h1) h2
+termination_by g
+decreasing_by form_wf
+
+end
+
+theorem MisereOutcome_sub_one_L {g : GameForm} (h0 : IsPFree g) (h1 : MisereOutcome g = .L) :
+    MisereOutcome (g + (-1)) = .L := by
+  simp only [MisereOutcome_eq_L_iff]
+  have ⟨h2, h3⟩ := MisereOutcome_eq_L_iff.mp h1
+  constructor
+  · exact WinsGoingFirst_left_sub_one h0 h2
+  · exact not_WinsGoingFirst_right_sub_one h0 h3
+
+theorem MisereOutcome_sub_nat_L {g : GameForm} (n : ℕ) (h0 : IsPFree g) (h1 : MisereOutcome g = .L) :
+    MisereOutcome (g + (-n)) = .L := by
+  induction n with
+  | zero => simp [h1]
+  | succ k ih =>
+    rw [Nat.cast_add, Nat.cast_one, neg_add_rev, add_comm (-1), <-add_assoc]
+    refine MisereOutcome_sub_one_L ?_ ih
+    rw [<-IsPFree.neg_iff, neg_add_rev, neg_neg, add_comm]
+    exact add_nat_IsPFree (IsPFree.neg_iff.mpr h0) k
+
 theorem add_birthday_plus_one_R (g : GameForm) (b : ℕ) (h1 : birthday g = b) :
     MisereOutcome (g + (b + (1 : ℕ))) = .R := by
   sorry
