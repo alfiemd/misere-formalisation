@@ -64,6 +64,13 @@ theorem ge_R (o : Outcome) : o ≥ Outcome.R := by
   all_goals simp [instLE, LT.lt]
 
 @[simp]
+theorem le_R_iff (o : Outcome) : o ≤ Outcome.R ↔ o = .R := by
+  constructor <;> intro h1
+  · cases o <;> simp [instLE, LT.lt] at h1
+    rfl
+  · rw [h1]
+
+@[simp]
 theorem L_ge (o : Outcome) : Outcome.L ≥ o := by
   simp only [ge_iff_le]
   unfold LE.le

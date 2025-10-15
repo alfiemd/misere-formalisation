@@ -113,6 +113,17 @@ theorem MisereGe_antisymm {A : GameForm → Prop} {g h : GameForm} (h1 : g ≥m 
     g =m A h := fun x h3 =>
   PartialOrder.le_antisymm (MisereOutcome (g + x)) (MisereOutcome (h + x)) (h2 x h3) (h1 x h3)
 
+theorem MisereGe_trans {A : GameForm → Prop} {g h k : GameForm} (h1 : g ≥m A h) (h2 : h ≥m A k) :
+    g ≥m A k := by
+  unfold MisereGe at *
+  intro x h3
+  exact le_trans (h2 x h3) (h1 x h3)
+
+theorem MisereGe_refl {A : GameForm → Prop} (g : GameForm) : g ≥m A g := by
+  unfold MisereGe
+  intro x h3
+  exact le_refl MisereOutcome (g + x)
+
 theorem not_MisereEq_of_not_MisereGe {A : GameForm → Prop} {g h : GameForm} (h1 : ¬(g ≥m A h)) :
     ¬(g =m A h) := by
   simp only [MisereGe, ge_iff_le, not_forall] at h1
@@ -174,12 +185,28 @@ theorem one_MisereOutcome_R : MisereOutcome (1 : GameForm) = .R := by
   · refine GameForm.Misere.Outcome.WinsGoingFirst_of_End ?_
     simp only [IsEnd, GameForm.one_def, GameForm.moves_ofSets, Player.cases]
   · rw [GameForm.Misere.Outcome.not_WinsGoingFirst]
+    simp only [IsEnd, leftMoves_one, Set.singleton_ne_empty, not_false_eq_true,
+               Set.mem_singleton_iff, Player.neg_left, forall_eq, moves_zero,
+               WinsGoingFirst_of_IsEnd, and_self]
+
+@[simp]
+theorem nat_IsEnd_right (n : ℕ) : IsEnd .right (n : GameForm) := by
+  induction n with
+  | zero => simp only [Nat.cast_zero, IsEnd_zero]
+  | succ k ih => simp only [IsEnd, Nat.cast_add, Nat.cast_one, moves_add, rightMoves_natCast,
+                            Set.image_empty, rightMoves_one, Set.union_self]
+
+@[simp]
+theorem pos_nat_MisereOutcome_R {n : ℕ} (h1 : n > 0) : MisereOutcome (n : GameForm) = .R := by
+  induction n, h1 using Nat.le_induction with
+  | base => simp
+  | succ k h2 ih =>
+    rw [Nat.cast_add, Nat.cast_one, MisereOutcome_eq_R_iff]
     constructor
-    · simp only [IsEnd, GameForm.one_def, GameForm.moves_ofSets, Player.cases,
-                 Set.singleton_ne_empty, not_false_eq_true]
-    · intro gl h2
-      simp [GameForm.one_def] at h2
-      rw [h2]
-      simp only [Player.neg_left, IsEnd_zero, WinsGoingFirst_of_IsEnd]
+    · exact WinsGoingFirst_of_End (nat_IsEnd_right (k + 1))
+    · rw [GameForm.Misere.Outcome.not_WinsGoingFirst]
+      simp only [IsEnd, leftMoves_natCast_succ, Set.singleton_ne_empty, not_false_eq_true,
+                 Set.mem_singleton_iff, Player.neg_left, forall_eq, rightMoves_natCast,
+                 WinsGoingFirst_of_IsEnd, and_self]
 
 end GameForm.Misere.Outcome

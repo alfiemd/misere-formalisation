@@ -139,6 +139,15 @@ theorem not_IsEnd_ne_zero {g : G} {p : Player} (h1 : ¬(IsEnd p g)) : g ≠ 0 :=
   rw [h2] at h1
   exact h1 IsEnd_zero
 
+theorem not_IsEnd_exists_move {g : G} {p : Player}
+    (h1 : ¬IsEnd p g) :
+    ∃ gp, gp ∈ moves p g := by
+  unfold IsEnd at h1
+  by_contra h4
+  simp only [not_exists] at h4
+  absurd h1
+  exact Set.subset_eq_empty h4 rfl
+
 theorem add_left_mem_moves_add {p : Player} {x y : G} (h : x ∈ moves p y) (z : G) :
     z + x ∈ moves p (z + y) := by
   rw [moves_add]; right; use x

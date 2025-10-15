@@ -90,7 +90,6 @@ theorem MisereOutcome_eq_player_iff (g : G) (p : Player) :
     <;> simp only [Player.neg_left, Player.neg_right] at h1
     <;> simp only [h1, reduceIte, Player.neg_right, Outcome.ofPlayer]
 
-@[simp]
 theorem MisereOutcome_eq_L_iff {g : G} :
     (MisereOutcome g = .L) ↔ (WinsGoingFirst .left g ∧ ¬WinsGoingFirst .right g) := by
   have h1 : Outcome.L = Outcome.ofPlayer .left := rfl
@@ -98,7 +97,6 @@ theorem MisereOutcome_eq_L_iff {g : G} :
   rw [h1, h2]
   exact MisereOutcome_eq_player_iff g Player.left
 
-@[simp]
 theorem MisereOutcome_eq_R_iff {g : G} :
     (MisereOutcome g = .R) ↔ (WinsGoingFirst .right g ∧ ¬WinsGoingFirst .left g) := by
   have h1 : Outcome.R = Outcome.ofPlayer .right := rfl
@@ -106,7 +104,6 @@ theorem MisereOutcome_eq_R_iff {g : G} :
   rw [h1, h2]
   exact MisereOutcome_eq_player_iff g Player.right
 
-@[simp]
 theorem MisereOutcome_eq_P_iff' {g : G} {p : Player} :
     (MisereOutcome g = .P) ↔ (¬WinsGoingFirst p g ∧ ¬WinsGoingFirst (-p) g) := by
   constructor
@@ -119,7 +116,6 @@ theorem MisereOutcome_eq_P_iff' {g : G} {p : Player} :
     · simp only [Player.neg_right, Player.neg_left] at h2
       simp only [h1, h2, Player.neg_left, Player.neg_right, Player.neg_right, reduceIte]
 
-@[simp]
 theorem MisereOutcome_eq_P_iff {g : G} :
     (MisereOutcome g = .P) ↔ (¬WinsGoingFirst .right g ∧ ¬WinsGoingFirst .left g) := by
   rw [<-Player.neg_right]
