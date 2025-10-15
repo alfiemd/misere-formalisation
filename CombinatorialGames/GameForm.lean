@@ -284,14 +284,8 @@ private theorem moves_add' (p : Player) (x y : GameForm) :
     moves p (x + y) = (· + y) '' moves p x ∪ (x + ·) '' moves p y := by
   rw [add_eq', moves_ofSets]
 
-instance : Form GameForm where
-  moves_neg' := moves_neg'
-  moves_add' := moves_add'
-  moves_zero' := moves_zero'
-  moves_small' := instSmallElemMoves
-
 theorem isOption_neg {x y : GameForm} : IsOption x (-y) ↔ IsOption (-x) y := by
-  simp only [moves_neg, IsOption.iff_mem_union, Player.neg_left, Player.neg_right,
+  simp only [moves_neg', IsOption.iff_mem_union, Player.neg_left, Player.neg_right,
              Set.union_comm, Set.mem_union, Set.mem_neg]
 
 @[simp]
@@ -300,35 +294,35 @@ theorem isOption_neg_neg {x y : GameForm} : IsOption (-x) (-y) ↔ IsOption x y 
 
 theorem forall_moves_neg {P : GameForm → Prop} {p : Player} {x : GameForm} :
     (∀ y ∈ moves p (-x), P y) ↔ (∀ y ∈ moves (-p) x, P (-y)) := by
-  simp only [moves_neg, Set.mem_neg, Set.forall_mem_neg]
+  simp only [moves_neg', Set.mem_neg, Set.forall_mem_neg]
 
 theorem IsOption.add_left {x y z : GameForm} (h : IsOption x y) : IsOption (z + x) (z + y) := by
-  aesop (add simp [moves_add])
+  aesop (add simp [moves_add'])
 
 theorem IsOption.add_right {x y z : GameForm} (h : IsOption x y) : IsOption (x + z) (y + z) := by
-  aesop (add simp [moves_add])
+  aesop (add simp [moves_add'])
 
 theorem forall_moves_add {p : Player} {P : GameForm → Prop} {x y : GameForm} :
     (∀ a ∈ moves p (x + y), P a) ↔
       (∀ a ∈ moves p x, P (a + y)) ∧ (∀ b ∈ moves p y, P (x + b)) := by
-  aesop (add simp [moves_add])
+  aesop (add simp [moves_add'])
 
 theorem exists_moves_add {p : Player} {P : GameForm → Prop} {x y : GameForm} :
     (∃ a ∈ moves p (x + y), P a) ↔
       (∃ a ∈ moves p x, P (a + y)) ∨ (∃ b ∈ moves p y, P (x + b)) := by
-  aesop (add simp [moves_add])
+  aesop (add simp [moves_add'])
 
 @[simp]
 theorem add_eq_zero_iff {x y : GameForm} : x + y = 0 ↔ x = 0 ∧ y = 0 := by
-  constructor <;> simp_all [GameForm.ext_iff, moves_add, moves_zero]
+  constructor <;> simp_all [GameForm.ext_iff, moves_add', moves_zero']
 
 private theorem add_zero' (x : GameForm) : x + 0 = x := by
   refine moveRecOn x ?_
-  aesop (add simp [moves_zero, moves_add])
+  aesop (add simp [moves_zero', moves_add'])
 
 private theorem add_comm' (x y : GameForm) : x + y = y + x := by
   ext
-  simp only [moves_add, Set.mem_union, Set.mem_image, or_comm]
+  simp only [moves_add', Set.mem_union, Set.mem_image, or_comm]
   congr! 3 <;>
   · refine and_congr_right_iff.2 fun h ↦ ?_
     rw [add_comm']
@@ -337,7 +331,7 @@ decreasing_by form_wf
 
 private theorem add_assoc' (x y z : GameForm) : x + y + z = x + (y + z) := by
   ext1
-  simp only [moves_add, Set.image_union, Set.image_image, Set.union_assoc]
+  simp only [moves_add', Set.image_union, Set.image_image, Set.union_assoc]
   refine congrArg₂ _ ?_ (congrArg₂ _ ?_ ?_) <;>
   · ext
     congr! 2
@@ -355,6 +349,18 @@ instance : AddCommMonoid GameForm where
 /-- The subtraction of `x` and `y` is defined as `x + (-y)`. -/
 instance : SubNegMonoid GameForm where
   zsmul := zsmulRec
+
+/-- We define the `NatCast` instance as `↑0 = 0` and `↑(n + 1) = !{{↑n} | ∅}`.
+
+Note that this is equivalent, but not identical, to the more common definition `↑n = !{Iio n | ∅}`.
+For that, use `NatOrdinal.toGameForm`. -/
+instance : AddCommMonoidWithOne GameForm where
+
+instance : Form GameForm where
+  moves_neg' := moves_neg'
+  moves_add' := moves_add'
+  moves_zero' := moves_zero'
+  moves_small' := instSmallElemMoves
 
 @[simp]
 theorem moves_sub (p : Player) (x y : GameForm) :
@@ -375,7 +381,7 @@ theorem sub_right_mem_moves_sub {p : Player} {x y : GameForm} (h : x ∈ moves p
 
 private theorem neg_add' (x y : GameForm) : -(x + y) = -x + -y := by
   ext
-  simp only [moves_neg, moves_add, Set.union_neg, Set.mem_union, Set.mem_neg, Set.mem_image,
+  simp only [moves_neg', moves_add', Set.union_neg, Set.mem_union, Set.mem_neg, Set.mem_image,
              Set.exists_mem_neg]
   congr! 3 <;>
   · refine and_congr_right_iff.2 fun _ ↦ ?_
@@ -388,12 +394,6 @@ instance : SubtractionCommMonoid GameForm where
   neg_add_rev x y := by rw [neg_add', add_comm]
   neg_eq_of_add := by simp
   add_comm := add_comm
-
-/-- We define the `NatCast` instance as `↑0 = 0` and `↑(n + 1) = !{{↑n} | ∅}`.
-
-Note that this is equivalent, but not identical, to the more common definition `↑n = !{Iio n | ∅}`.
-For that, use `NatOrdinal.toGameForm`. -/
-instance : AddCommMonoidWithOne GameForm where
 
 /-- This version of the theorem is more convenient for the `game_cmp` tactic. -/
 theorem leftMoves_natCast_succ' : ∀ n : ℕ, (n.succ : GameForm)ᴸ = {(n : GameForm)}

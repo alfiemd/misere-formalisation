@@ -240,9 +240,7 @@ theorem ofGameForm_moves_mem_iff {g gp : GameForm} {p : Player}
   · rw [ofGameForm, moves_ofSetsWithTombs] at h1
     simp only [Set.mem_range, Subtype.exists, exists_prop] at h1
     obtain ⟨gpp, h1, h2⟩ := h1
-    have h3 : gpp = gp := ofGameForm_Injective h2
-    rw [<-h3]
-    exact h1
+    rwa [ofGameForm_Injective h2] at h1
   · unfold ofGameForm
     rw [moves_ofSetsWithTombs]
     refine Set.mem_range.mpr ?_
@@ -309,6 +307,10 @@ decreasing_by form_wf
 instance : Zero AugmentedForm := ⟨ofSetsWithTombs (fun _ ↦ ∅) (fun _ => False)⟩
 
 theorem zero_def : (0 : AugmentedForm) = ofSetsWithTombs (fun _ ↦ ∅) (fun _ => False) := rfl
+
+instance : One AugmentedForm := ⟨!{{0} | ∅}⟩
+
+theorem one_def : (1 : AugmentedForm) = !{{0} | ∅} := rfl
 
 @[simp]
 theorem moves_zero (p : Player) : moves p (0 : AugmentedForm) = ∅ := by
@@ -411,6 +413,8 @@ noncomputable instance : AddCommMonoid AugmentedForm where
   add_comm := add_comm'
   add_assoc := add_assoc'
   nsmul := nsmulRec
+
+instance : AddMonoidWithOne AugmentedForm where
 
 theorem ofGameForm_zero : ofGameForm (0 : GameForm) = (0 : AugmentedForm) := by
   rw [GameForm.zero_def, zero_def, ofGameForm]
