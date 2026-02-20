@@ -631,7 +631,9 @@ theorem add_birthday_plus_one_R (g : GameForm) (b : ℕ) (h1 : birthday g = b) :
 
 theorem add_neg_birthday_plus_one_L (g : GameForm) (b : ℕ) (h1 : birthday g = b) :
     MisereOutcome (g + (-(b + (1 : ℕ)))) = .L := by
-  sorry
+  simpa [outcome_conjugate_eq_outcome_neg, neg_add_rev, add_comm, add_left_comm, add_assoc] using
+    congrArg Outcome.Conjugate
+      (add_birthday_plus_one_R (-g) b (by simpa [Form.birthday_neg] using h1))
 
 def RTippingPoint.aux (g : GameForm) [h1 : Short g] :
     ∃ (n : ℕ), MisereOutcome (g + n) = .R := by
