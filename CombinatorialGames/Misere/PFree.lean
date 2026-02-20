@@ -569,9 +569,65 @@ theorem MisereGe_of_nat_le {A : GameForm → Prop}
     rw [<-add_assoc, add_comm (n + k') 1]
     exact ge_one_add_self (n + k')
 
+mutual
+
+private theorem right_wins_of_birthday_le (g : GameForm) (b : ℕ) (h1 : birthday g ≤ b) :
+    WinsGoingFirst .right (g + b) := by
+  by_cases h2 : IsEnd .right g
+  · exact GameForm.Misere.Outcome.add_end_WinsGoingFirst h2
+      (GameForm.Misere.Outcome.nat_IsEnd_right b)
+  · obtain ⟨gr, h3⟩ := Form.not_IsEnd_exists_move h2
+    refine GameForm.Misere.Outcome.WinsGoingFirst_of_moves ?_
+    refine ⟨gr + b, Form.add_right_mem_moves_add h3 b, ?_⟩
+    exact not_left_wins_of_birthday_lt gr b ((Form.birthday_lt_of_mem_moves h3).trans_le h1)
+termination_by g
+decreasing_by form_wf
+
+private theorem not_left_wins_of_birthday_lt (g : GameForm) (b : ℕ) (h1 : birthday g < b) :
+    ¬WinsGoingFirst .left (g + b) := by
+  have hbpos : 0 < b := by
+    by_contra hb
+    have : b = 0 := Nat.eq_zero_of_not_pos hb
+    subst this
+    simp at h1
+  obtain ⟨k, hk⟩ := Nat.exists_eq_succ_of_ne_zero (Nat.ne_of_gt hbpos)
+  rw [GameForm.Misere.Outcome.not_WinsGoingFirst]
+  constructor
+  · intro h2
+    have h4 : ¬IsEnd .left ((k + 1 : ℕ) : GameForm) := by simp [IsEnd]
+    exact h4 (by simpa [hk] using (IsEnd.add_iff.mp h2).right)
+  · intro gl h2
+    rw [moves_add] at h2
+    rcases h2 with ⟨gl', h3, rfl⟩ | ⟨bl, h3, rfl⟩
+    · exact right_wins_of_birthday_le gl' b (((Form.birthday_lt_of_mem_moves h3).trans h1).le)
+    · have h6 : bl = (k : GameForm) := by
+        simpa [hk, Nat.succ_eq_add_one] using h3
+      rw [h6]
+      have h7 : birthday g ≤ (k : ℕ) := by
+        apply Order.lt_add_one_iff.mp
+        simpa [hk, Nat.cast_add, Nat.cast_one] using h1
+      by_cases h8 : IsEnd .right g
+      · exact GameForm.Misere.Outcome.add_end_WinsGoingFirst h8
+          (GameForm.Misere.Outcome.nat_IsEnd_right k)
+      · obtain ⟨gr, h9⟩ := Form.not_IsEnd_exists_move h8
+        refine GameForm.Misere.Outcome.WinsGoingFirst_of_moves ?_
+        refine ⟨gr + k, Form.add_right_mem_moves_add h9 k, ?_⟩
+        exact not_left_wins_of_birthday_lt gr k ((Form.birthday_lt_of_mem_moves h9).trans_le h7)
+termination_by g
+decreasing_by form_wf
+
+end
+
+private theorem add_gt_birthday_R (g : GameForm) (b : ℕ) (h1 : birthday g < b) :
+    MisereOutcome (g + b) = .R := by
+  exact MisereOutcome_eq_R_iff.mpr
+    ⟨right_wins_of_birthday_le g b h1.le, not_left_wins_of_birthday_lt g b h1⟩
+
 theorem add_birthday_plus_one_R (g : GameForm) (b : ℕ) (h1 : birthday g = b) :
     MisereOutcome (g + (b + (1 : ℕ))) = .R := by
-  sorry
+  have h2 : (b : NatOrdinal) < (b + 1 : ℕ) := by
+    simp
+  simpa [Nat.cast_add, Nat.cast_one, add_assoc] using add_gt_birthday_R g (b + 1) (h1 ▸ h2)
 
 theorem add_neg_birthday_plus_one_L (g : GameForm) (b : ℕ) (h1 : birthday g = b) :
     MisereOutcome (g + (-(b + (1 : ℕ)))) = .L := by
