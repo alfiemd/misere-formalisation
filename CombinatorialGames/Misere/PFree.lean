@@ -710,7 +710,24 @@ noncomputable def NTippingPoint (g : GameForm) [Short g] : ℕ :=
   Nat.find (NTippingPoint.aux g)
 
 theorem NTippingPoint.neg (g : GameForm) [Short g] : NTippingPoint g = NTippingPoint (-g) := by
-  sorry
+  classical
+  unfold NTippingPoint
+  apply Nat.find_congr'
+  intro n
+  have hconjN : ∀ x : GameForm, MisereOutcome x = .N ↔ MisereOutcome (-x) = .N := by
+    intro x
+    constructor <;> intro hx
+    · have : (MisereOutcome x).Conjugate = .N := by rw [hx]; rfl
+      simpa [outcome_conjugate_eq_outcome_neg] using this
+    · have : (MisereOutcome (-x)).Conjugate = .N := by rw [hx]; rfl
+      simpa [outcome_conjugate_eq_outcome_neg] using this
+  have h1 : MisereOutcome (g + n) = .N ↔ MisereOutcome (-g + (-n)) = .N := by
+    simpa [neg_add_rev, add_comm, add_left_comm, add_assoc] using hconjN (g + n)
+  have h2 : MisereOutcome (g + (-n)) = .N ↔ MisereOutcome (-g + n) = .N := by
+    simpa [neg_add_rev, add_comm, add_left_comm, add_assoc] using hconjN (g + (-n))
+  constructor <;> intro h
+  · simpa [or_comm] using Or.imp h1.mp h2.mp h
+  · simpa [or_comm] using Or.imp h2.mpr h1.mpr h
 
 open scoped Classical in
 noncomputable def RTippingPoint (g : GameForm) [Short g] : ℕ :=
