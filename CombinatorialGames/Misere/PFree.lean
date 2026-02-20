@@ -649,9 +649,61 @@ def LTippingPoint.aux (g : GameForm) [h1 : Short g] :
   rw [Nat.cast_add]
   exact add_neg_birthday_plus_one_L g b h2
 
+private theorem left_wins_second_implies_left_wins_first_add_one {g : GameForm}
+    (h1 : ¬WinsGoingFirst .right g) : WinsGoingFirst .left (g + 1) := by
+  refine GameForm.Misere.Outcome.WinsGoingFirst_of_moves ?_
+  refine ⟨g, ?_, ?_⟩
+  · rw [moves_add, GameForm.leftMoves_one]
+    right
+    refine ⟨0, by simp, by simp⟩
+  · simpa [Player.neg_left] using h1
+
+open scoped Classical in
+private theorem exists_add_nat_N_of_not_R (g : GameForm) [Short g] (h1 : MisereOutcome g ≠ .R) :
+    ∃ n : ℕ, MisereOutcome (g + n) = .N := by
+  let hR : ∃ n : ℕ, MisereOutcome (g + n) = .R := RTippingPoint.aux g
+  let r : ℕ := Nat.find hR
+  have hrR : MisereOutcome (g + r) = .R := Nat.find_spec hR
+  have hrpos : 0 < r := by
+    by_contra h2
+    have h3 : r = 0 := Nat.eq_zero_of_not_pos h2
+    exact h1 (by simpa [r, h3, Nat.cast_zero, add_zero] using hrR)
+  let n : ℕ := r - 1
+  have hnsucc : n + 1 = r := by
+    dsimp [n]
+    omega
+  have hnlt : n < r := by
+    omega
+  have hnotR_n : MisereOutcome (g + n) ≠ .R := by
+    exact Nat.find_min hR (by simpa [r] using hnlt)
+  have hnotLeft_r : ¬WinsGoingFirst .left (g + r) := (MisereOutcome_eq_R_iff.mp hrR).2
+  have hright_n : WinsGoingFirst .right (g + n) := by
+    by_contra h2
+    have h3 : WinsGoingFirst .left ((g + n) + 1) :=
+      left_wins_second_implies_left_wins_first_add_one h2
+    have h4 : WinsGoingFirst .left (g + (n + 1 : ℕ)) := by
+      simpa [Nat.cast_add, Nat.cast_one, add_assoc] using h3
+    exact hnotLeft_r (by simpa [hnsucc] using h4)
+  refine ⟨n, ?_⟩
+  cases hn : MisereOutcome (g + n)
+  · exact False.elim ((MisereOutcome_eq_L_iff.mp hn).right hright_n)
+  · simp
+  · exact False.elim ((MisereOutcome_eq_P_iff.mp hn).left hright_n)
+  · exact False.elim (hnotR_n hn)
+
 def NTippingPoint.aux (g : GameForm) [h1 : Short g] :
     ∃ (n : ℕ), MisereOutcome (g + n) = .N ∨ MisereOutcome (g + (-n)) = .N := by
-  sorry
+  by_cases h2 : MisereOutcome g = .R
+  · have h3 : MisereOutcome (-g) = .L := by
+      simpa [h2] using (outcome_conjugate_eq_outcome_neg g).symm
+    obtain ⟨n, hn⟩ := exists_add_nat_N_of_not_R (-g) (by simp [h3])
+    refine ⟨n, Or.inr ?_⟩
+    have h4 : (MisereOutcome (-g + n)).Conjugate = .N := by
+      rw [hn]
+      rfl
+    simpa [outcome_conjugate_eq_outcome_neg, neg_add_rev, add_comm, add_left_comm, add_assoc] using h4
+  · obtain ⟨n, hn⟩ := exists_add_nat_N_of_not_R g h2
+    exact ⟨n, Or.inl hn⟩
 
 open scoped Classical in
 noncomputable def NTippingPoint (g : GameForm) [Short g] : ℕ :=
